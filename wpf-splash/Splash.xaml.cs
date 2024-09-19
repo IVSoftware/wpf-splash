@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,7 +31,7 @@ namespace wpf_splash
         PreparingUserInterface,
         FinalizingSetup
     }
-    public partial class Splash : Window
+    public partial class Splash : Window, INotifyPropertyChanged
     {
         public Splash()
         {
@@ -60,6 +62,7 @@ namespace wpf_splash
 
             for (int i = 0; i < states.Length; i++)
             {
+                CurrentState = states[i].ToString().CamelCaseToSpaces();
                 stopwatch.Restart();
                 randoTimeSpan = TimeSpan.FromSeconds(0.5 * (_rando.NextDouble() * 3d)); 
                 await Task.Delay(randoTimeSpan);
@@ -68,5 +71,30 @@ namespace wpf_splash
             OverallProgressBar.Value = 100;
         }
         Random _rando = new Random(Seed:1);
+        public string CurrentState
+        {
+            get => _currentState;
+            set
+            {
+                if (!Equals(_currentState, value))
+                {
+                    _currentState = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        string _currentState = string.Empty;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public event PropertyChangedEventHandler? PropertyChanged;
+    }
+    static partial class Extensions
+    {
+        public static string CamelCaseToSpaces(this string @string)
+        {
+            string pattern = "(?<![A-Z])([A-Z][a-z]|(?<=[a-z])[A-Z])";
+            string replacement = " $1";
+            return Regex.Replace(@string, pattern, replacement).Trim();
+        }
     }
 }
