@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:wpf_splash"
         Title = "MainWindow"
-        WindowStartupLocation = "CenterScreen"
         mc:Ignorable="d">
 
     <Window.DataContext>

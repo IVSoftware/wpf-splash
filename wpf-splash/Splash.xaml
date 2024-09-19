@@ -12,10 +12,11 @@
         WindowStartupLocation="CenterScreen"
         ShowInTaskbar="False">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="139*"/>
-            <RowDefinition Height="145*"/>
-        </Grid.RowDefinitions>
-        <Image Source="pack://application:,,,/Resources/Splash.png" Grid.RowSpan="2"/>
+        <Image Source="pack://application:,,,/Resources/Splash.png" Stretch="Fill" />
+        <StackPanel VerticalAlignment="Bottom" Background="#AAFFFFFF">
+            <Label x:Name="StatusLabel" FontSize="14" FontWeight="Bold" Content="Starting..." HorizontalAlignment="Center" />
+            <ProgressBar x:Name="StateProgressBar" Maximum="100" Height="20" Margin="5" />
+            <ProgressBar x:Name="OverallProgressBar" Maximum="100" Height="20" Margin="5" />
+        </StackPanel>
     </Grid>
 </Window>

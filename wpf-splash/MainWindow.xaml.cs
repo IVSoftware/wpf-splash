@@ -26,10 +26,9 @@ namespace wpf_splash
 
         private async Task InitializeAsync()
         {
-            await Task.Delay(1000);
             var splash = new Splash();
-            splash.Show();
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            await splash.Show();
+
             WindowState = WindowState.Normal;
             Width = 500;
             Height = 300;
