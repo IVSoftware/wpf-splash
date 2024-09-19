@@ -40,7 +40,7 @@ namespace wpf_splash
                 var randoTimeSpan = TimeSpan.FromSeconds(0.5 * (_rando.NextDouble() * 3d));
 
                 await Task.Delay(randoTimeSpan);
-                OverallProgressBar.Value = 100 * (i / (double)states.Length);
+                OverallProgressBar.Value = 0.5 + 100 * (i / (double)states.Length);
             }
             OverallProgressBar.Value = 100;
         }

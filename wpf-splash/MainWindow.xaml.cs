@@ -41,17 +41,34 @@ namespace wpf_splash
             {
                 double screenWidth = SystemParameters.PrimaryScreenWidth;
                 double screenHeight = SystemParameters.PrimaryScreenHeight;
-                double left = (screenWidth - this.Width) / 2;
-                double top = (screenHeight - this.Height) / 2;
-                this.Left = left;
-                this.Top = top;
+                double left = (screenWidth - Width) / 2;
+                double top = (screenHeight - Height) / 2;
+                Left = left;
+                Top = top;
             }
             #endregion L o c a l M e t h o d s
         }
+        new MainWindowViewModel DataContext => (MainWindowViewModel)base.DataContext;
 
-        private void Test_Click(object sender, RoutedEventArgs e)
+        private async void Test_Click(object sender, RoutedEventArgs e)
         {
+            DataContext.Status.ReadyVisibility = Visibility.Hidden;
 
+            var progress = new Progress<int>(percent =>
+            {
+                progressBar.Value = percent;
+            });
+            await Task.Run(() =>
+            {
+                // Simulate a 2 S background processing task.
+                for (int i = 0; i <= 20; i++)
+                {
+                    ((IProgress<int>)progress).Report(i * 5);
+                    Thread.Sleep(100);
+                }
+            });
+
+            DataContext.Status.ReadyVisibility = Visibility.Visible;
         }
     }
     public class MainWindowViewModel
