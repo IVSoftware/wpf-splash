@@ -30,10 +30,13 @@ namespace wpf_splash
                 await splash.Show();
 
                 WindowState = WindowState.Normal;
+                // Set the dimensions that you actually want here, and turn the TaskBar icon back on.
                 Width = 500;
                 Height = 300;
                 ShowInTaskbar = true;
                 localCenterToScreen();
+                // Do this BEFORE closing the splash. It's a smoke-and-mirrors
+                // trick that hides some of the ugly transient draws.
                 splash.Close();
 
                 #region L o c a l M e t h o d s

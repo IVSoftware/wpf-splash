@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -29,16 +30,38 @@ namespace wpf_splash
         FinalizingSetup
     }
     public partial class Splash : Window
-    {       
-        public Splash() => InitializeComponent();
+    {
+        public Splash()
+        {
+            InitializeComponent();
+            DataContext = this;
+        }
         public new async Task Show()
         {
             base.Show();
             StartupState[] states = Enum.GetValues<StartupState>();
+            var stopwatch = new Stopwatch();
+            TimeSpan randoTimeSpan = TimeSpan.MaxValue;
+            Task taskSpinState;
+
+            var progress = new Progress<double>(percent =>
+            {
+                StateProgressBar.Value = percent;
+            });
+            bool isCancelled = false;
+            taskSpinState = Task.Run(() =>
+            {
+                while(!isCancelled)
+                {
+                    ((IProgress<double>)progress).Report(100 * (stopwatch.ElapsedMilliseconds / (double)randoTimeSpan.TotalMilliseconds));
+                    Thread.Sleep(_rando.Next(100, 200));
+                }
+            });
+
             for (int i = 0; i < states.Length; i++)
             {
-                var randoTimeSpan = TimeSpan.FromSeconds(0.5 * (_rando.NextDouble() * 3d));
-
+                stopwatch.Restart();
+                randoTimeSpan = TimeSpan.FromSeconds(0.5 * (_rando.NextDouble() * 3d)); 
                 await Task.Delay(randoTimeSpan);
                 OverallProgressBar.Value = 0.5 + 100 * (i / (double)states.Length);
             }
