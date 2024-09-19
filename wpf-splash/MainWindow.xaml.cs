@@ -12,41 +12,42 @@ namespace wpf_splash
     {
         public MainWindow()
         {
+            // Minimized, and without a TaskBar icon, no
+            // chance of un-minimizing it until we say so!
             WindowState = WindowState.Minimized;
             Width = 0;
             Height = 0;
             ShowInTaskbar = false;
             InitializeComponent();
-            Loaded += (sender, e) =>
+            Loaded += async(sender, e) =>
             {
-                //Visibility = Visibility.Hidden;
-                _ = InitializeAsync();
+                // NOW the native hWnd exists AND it's the first hWnd to come
+                // into existence, making this class (MainWindow) the "official"
+                // application main window. This means that when it closes, the
+                // app will exit as long as we make our other window handles "behave".
+
+                var splash = new Splash();
+                await splash.Show();
+
+                WindowState = WindowState.Normal;
+                Width = 500;
+                Height = 300;
+                ShowInTaskbar = true;
+                localCenterToScreen();
+                splash.Close();
+
+                #region L o c a l M e t h o d s
+                void localCenterToScreen()
+                {
+                    double screenWidth = SystemParameters.PrimaryScreenWidth;
+                    double screenHeight = SystemParameters.PrimaryScreenHeight;
+                    double left = (screenWidth - Width) / 2;
+                    double top = (screenHeight - Height) / 2;
+                    Left = left;
+                    Top = top;
+                }
+                #endregion L o c a l M e t h o d s
             };
-        }
-
-        private async Task InitializeAsync()
-        {
-            var splash = new Splash();
-            await splash.Show();
-
-            WindowState = WindowState.Normal;
-            Width = 500;
-            Height = 300;
-            ShowInTaskbar = true;
-            localCenterToScreen();
-            splash.Close();
-
-            #region L o c a l M e t h o d s
-            void localCenterToScreen()
-            {
-                double screenWidth = SystemParameters.PrimaryScreenWidth;
-                double screenHeight = SystemParameters.PrimaryScreenHeight;
-                double left = (screenWidth - Width) / 2;
-                double top = (screenHeight - Height) / 2;
-                Left = left;
-                Top = top;
-            }
-            #endregion L o c a l M e t h o d s
         }
         new MainWindowViewModel DataContext => (MainWindowViewModel)base.DataContext;
 
