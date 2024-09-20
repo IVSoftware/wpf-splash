@@ -64,7 +64,7 @@ namespace wpf_splash
             {
                 CurrentState = states[i].ToString().CamelCaseToSpaces();
                 stopwatch.Restart();
-                randoTimeSpan = TimeSpan.FromSeconds(0.5 * (_rando.NextDouble() * 3d)); 
+                randoTimeSpan = TimeSpan.FromSeconds(0.5 + (_rando.NextDouble() * 2d)); 
                 await Task.Delay(randoTimeSpan);
                 OverallProgressBar.Value = 0.5 + 100 * (i / (double)states.Length);
             }
