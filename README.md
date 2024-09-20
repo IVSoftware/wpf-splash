@@ -1,8 +1,15 @@
-Since the underlying issue is the same for WPF as it is for WinForms, I'm going to port an earlier [answer](https://stackoverflow.com/a/75534137/5438626) and make it work for WPF. If you like, you can [clone](https://github.com/IVSoftware/wpf-splash.git) it from my GitHub repo and see if this looks like the kind of behavior you want, and if so I'll start with the _how_, and then explain the rationale of about it in this manner.
+Your question:
+
+> I created a waiting window that stays open to view the software loading. When the software finishes the calculations, it opens the main window [and should] close the waiting window.
 
 ___
 
-If you have a `Splash` window class, and have added to it an awaitable `Show()` method, then everything you need to do in `MainWindow` is in the `Loaded` event handler here in the `MainWindow` constructor. 
+For this scenario where a "splash screen" is shown before the main window, the underlying issue is the same for WPF as it is for WinForms, so I'm going to port an earlier [answer](https://stackoverflow.com/a/75534137/5438626) and make it work for WPF. If you like, you can [clone](https://github.com/IVSoftware/wpf-splash.git) this WPF solution and try it from my GitHub repo to see if this looks like the kind of behavior you want, and if so I'll start with the _how_, and then explain the _why_ - my rationale for going about it in this manner.
+
+[![splash before main app window][1]][1]
+___
+
+If you have something similar to the `Splash` window class shown below, where an awaitable `public new async Task Show()` method can now be called in place of the normal `Show()` method, then everything you need to do in `MainWindow` is in the `Loaded` event handler here in the `MainWindow` constructor. 
 
 ```
 public MainWindow()
@@ -177,12 +184,15 @@ static partial class Extensions
 
 #### Theory of Operation
 
-There are other ways to go about it, but here's the rationale based on my understanding.
+There may indeed be other ways to go about it, but here's the rationale for this approach based on my understanding.
 
-When a splash screen is created before the main window and is the first to create the native HWND, it may inadvertently become the main window in the application's context. Obviously this can turn things on their head, both at startup because you're now trying to close a main window pretender (the splash) and while keeping an unintended child window open (main window), and also at shutdown now prone to hangs due to weirdly undisposed handles.
+When a splash screen is created before the main window and is the first to create the native HWND, it may inadvertently become the main window in the application's context. Obviously this can turn things on their head, both at startup because you're now trying to close a main window pretender (the splash) while keeping open an unintended child window (main window), and also at shutdown now prone to hangs due to weirdly undisposed handles.
 
 So, both my WPF solution and my WinForms solution work by making sure the win 32 native HWND (the thing that is abstracted in `Window` in WPF and `Control` in WinForms) gets created FIRST. Which is all well and good, but the _problem_ is that creation of the HWND is usually a consequence of making it visible, and we don't _want_ the main form visible. What we want, obviously, is for the splash to be visible, and to not see a bunch of flickering or artifacts, for example if we try and show-then-hide the main window in an effort to get around this.
 
-The specific challenge of WPF is that (AFAIK) you can't create the window handle out of band the same way you can in WinForms by calling `var forceCreate = Handle` in your `Control` or `Form`. Instead, I take the approach of creating the main window minimized, temporarily hiding the task bar icon that could be used to un-minimize it, and then waiting for the main window to fire its `Loading` event (which is a sure sign that the HWND now exists).
+The specific challenge of WPF is that (to my knowledge) you can't create the window handle out of band the same way you can in WinForms by calling `var forceCreate = Handle` in your `Control` or `Form`. Instead, I take the approach of creating the main window minimized, temporarily hiding the task bar icon that could be used to un-minimize it, and then waiting for the main window to fire its `Loading` event (which is a sure sign that the HWND now exists).
 
 All this to say: my experience (more than I care to think about) is that this is a reliable way to do splash screens, but it comes with no additional warranty.
+
+
+  [1]: https://i.sstatic.net/4mnPDtLj.png
