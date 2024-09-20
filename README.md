@@ -1,18 +1,21 @@
-Since the underlying issue is the same for WPF as it is for WinForms, I'm going to port an earlier [answer](https://stackoverflow.com/a/75534137/5438626) and make it work for WPF. I'll start with the _how_, and then .
+Since the underlying issue is the same for WPF as it is for WinForms, I'm going to port an earlier [answer](https://stackoverflow.com/a/75534137/5438626) and make it work for WPF. If you like, you can [clone](https://github.com/IVSoftware/wpf-splash.git) it from my GitHub repo and see if this looks like the kind of behavior you want, and if so I'll start with the _how_, and then explain the rationale of about it in this manner.
 
-Everything you need to do is in the `Loaded` event handler here in the `MainWindow` constructor. 
+___
+
+If you have a `Splash` window class, and have added to it an awaitable `Show()` method, then everything you need to do in `MainWindow` is in the `Loaded` event handler here in the `MainWindow` constructor. 
 
 ```
 public MainWindow()
 {
-    // 1. Minimize the window
+    // Minimize the window
     WindowState = WindowState.Minimized;
-    // 2. Hide TaskBar icon so there's no temptation to un-minimizing it until we say so! 
+    // Hide TaskBar icon so there's no temptation to un-minimizing it until we say so! 
     ShowInTaskbar = false;
-    // 3. This might be old habits, but I always feel better with a small visual footprint 
-    //    in case there's spurious flicker when the window creation occure.
+    // This might be old habits, but I always feel better with a small visual footprint 
+    // in case there's spurious flicker when the window creation occurs.
     Width = 0;
     Height = 0;
+    WindowStyle = WindowStyle.None;
 
 
     InitializeComponent();
@@ -101,16 +104,8 @@ ____
 ```
 public enum StartupState
 {
-    InitializingComponents,
-    LoadingConfiguration,
-    CheckingForUpdates,
-    ContactingServer,
-    AuthenticatingUser,
-    LoadingResources,
-    LoadingAvatars,
-    EstablishingConnections,
-    PreparingUserInterface,
-    FinalizingSetup
+    InitializingComponents, LoadingConfiguration, CheckingForUpdates, ContactingServer, AuthenticatingUser, 
+    LoadingResources, LoadingAvatars, EstablishingConnections, PreparingUserInterface, FinalizingSetup
 }
 public partial class Splash : Window, INotifyPropertyChanged
 {
@@ -179,3 +174,15 @@ static partial class Extensions
     }
 }
 ```
+
+#### Theory of Operation
+
+There are other ways to go about it, but here's the rationale based on my understanding.
+
+When a splash screen is created before the main window and is the first to create the native HWND, it may inadvertently become the main window in the application's context. Obviously this can turn things on their head, both at startup because you're now trying to close a main window pretender (the splash) and while keeping an unintended child window open (main window), and also at shutdown now prone to hangs due to weirdly undisposed handles.
+
+So, both my WPF solution and my WinForms solution work by making sure the win 32 native HWND (the thing that is abstracted in `Window` in WPF and `Control` in WinForms) gets created FIRST. Which is all well and good, but the _problem_ is that creation of the HWND is usually a consequence of making it visible, and we don't _want_ the main form visible. What we want, obviously, is for the splash to be visible, and to not see a bunch of flickering or artifacts, for example if we try and show-then-hide the main window in an effort to get around this.
+
+The specific challenge of WPF is that (AFAIK) you can't create the window handle out of band the same way you can in WinForms by calling `var forceCreate = Handle` in your `Control` or `Form`. Instead, I take the approach of creating the main window minimized, temporarily hiding the task bar icon that could be used to un-minimize it, and then waiting for the main window to fire its `Loading` event (which is a sure sign that the HWND now exists).
+
+All this to say: my experience (more than I care to think about) is that this is a reliable way to do splash screens, but it comes with no additional warranty.
