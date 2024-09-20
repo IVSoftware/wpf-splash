@@ -42,8 +42,8 @@ public MainWindow()
         Height = 300;
         ShowInTaskbar = true;
         localCenterToScreen();
-        // Do this BEFORE closing the splash. It's a smoke-and-mirrors
-        // trick that hides some of the ugly transient draws.
+        // ^^^^ Do all this BEFORE closing the splash. It's a smoke-and-
+        //      mirrors trick that hides some of the ugly transient draws.
         splash.Close();
 
         #region L o c a l M e t h o d s
@@ -147,11 +147,13 @@ public partial class Splash : Window, INotifyPropertyChanged
         {
             CurrentState = states[i].ToString().CamelCaseToSpaces();
             stopwatch.Restart();
-            randoTimeSpan = TimeSpan.FromSeconds(0.5 * (_rando.NextDouble() * 3d)); 
+            randoTimeSpan = TimeSpan.FromSeconds(0.5 + (_rando.NextDouble() * 2d));  
             await Task.Delay(randoTimeSpan);
             OverallProgressBar.Value = 0.5 + 100 * (i / (double)states.Length);
         }
         OverallProgressBar.Value = 100;
+        isCancelled = true;
+        await taskSpinState;
     }
     Random _rando = new Random(Seed:1);
     public string CurrentState
@@ -181,8 +183,9 @@ static partial class Extensions
     }
 }
 ```
+___
 
-#### Theory of Operation
+##### Theory of Operation
 
 There may indeed be other ways to go about it, but here's the rationale for this approach based on my understanding.
 
