@@ -69,6 +69,8 @@ namespace wpf_splash
                 OverallProgressBar.Value = 0.5 + 100 * (i / (double)states.Length);
             }
             OverallProgressBar.Value = 100;
+            isCancelled = true;
+            await taskSpinState;
         }
         Random _rando = new Random(Seed:1);
         public string CurrentState
