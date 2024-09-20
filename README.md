@@ -1,16 +1,20 @@
-Since the underlying issue is the same for WPF, I'm going to my [answer](https://stackoverflow.com/a/75534137/5438626) for WinForms and make it work for WPF. And how about we make it work _first_, and then explain why it works _second_.
+Since the underlying issue is the same for WPF as it is for WinForms, I'm going to port an earlier [answer](https://stackoverflow.com/a/75534137/5438626) and make it work for WPF. I'll start with the _how_, and then .
 
 Everything you need to do is in the `Loaded` event handler here in the `MainWindow` constructor. 
 
 ```
 public MainWindow()
 {
-    // Minimized, and without a TaskBar icon, no
-    // chance of un-minimizing it until we say so!
+    // 1. Minimize the window
     WindowState = WindowState.Minimized;
+    // 2. Hide TaskBar icon so there's no temptation to un-minimizing it until we say so! 
+    ShowInTaskbar = false;
+    // 3. This might be old habits, but I always feel better with a small visual footprint 
+    //    in case there's spurious flicker when the window creation occure.
     Width = 0;
     Height = 0;
-    ShowInTaskbar = false;
+
+
     InitializeComponent();
     Loaded += async(sender, e) =>
     {

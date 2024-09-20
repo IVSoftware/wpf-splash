@@ -12,12 +12,16 @@ namespace wpf_splash
     {
         public MainWindow()
         {
-            // Minimized, and without a TaskBar icon, no
-            // chance of un-minimizing it until we say so!
+            // Minimize the window
             WindowState = WindowState.Minimized;
+            // Hide TaskBar icon so there's no temptation to un-minimizing it until we say so! 
+            ShowInTaskbar = false;
+            // This might be old habits, but I always feel better with a small visual footprint 
+            // in case there's spurious flicker when the window creation occurs.
             Width = 0;
             Height = 0;
-            ShowInTaskbar = false;
+            WindowStyle = WindowStyle.None;
+
             InitializeComponent();
             Loaded += async(sender, e) =>
             {
@@ -34,6 +38,8 @@ namespace wpf_splash
                 Width = 500;
                 Height = 300;
                 ShowInTaskbar = true;
+                WindowStyle = WindowStyle.SingleBorderWindow;
+
                 localCenterToScreen();
                 // Do this BEFORE closing the splash. It's a smoke-and-mirrors
                 // trick that hides some of the ugly transient draws.
